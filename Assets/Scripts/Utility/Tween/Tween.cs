@@ -1,7 +1,6 @@
 using System;
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 ///<summary> 경과시간에 따라 속도를 어떻게 달리 해줄 것인가? </summary>
 public enum TweenMode
@@ -34,15 +33,15 @@ public enum TweenMode
     Coserp,
 }
 
-/// <summary>
-/// 트윈 애니메이션을 위한 정적 클래스
-/// </summary>
+
 
 namespace Muks.Tween
 {
+
+    /// <summary>트윈 애니메이션을 위한 정적 클래스</summary>
     public static class Tween
     {
-
+        /// <summary>해당 오브젝트의 모든 Tween 정지 함수</summary>
         public static void Stop(GameObject gameObject)
         {
             TweenData[] tweens = gameObject.GetComponents<TweenData>();
@@ -50,19 +49,15 @@ namespace Muks.Tween
             foreach(TweenData tween in tweens)
             {
                 tween.enabled = false;
+                tween.IsLoop = false;
+                tween.OnComplete = null;
+                tween.DataSequences.Clear();
             }
-
         }
 
 
-
-
-
-        /// <summary>
-        /// 지속시간만큼 오브젝트를 이동시키는 함수
-        /// </summary>
-        /// 
-        public static void TransformMove(GameObject targetObject, Vector3 targetPosition, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 오브젝트를 이동시키는 함수</summary>
+        public static TweenData TransformMove(GameObject targetObject, Vector3 targetPosition, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTransformMove objToMove = !targetObject.GetComponent<TweenTransformMove>()
                 ? targetObject.AddComponent<TweenTransformMove>()
@@ -73,6 +68,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToMove.IsLoop = false;
             objToMove.AddDataSequence(tempData);
 
             if (!objToMove.enabled)
@@ -81,37 +78,13 @@ namespace Muks.Tween
                 objToMove.TotalDuration = 0;
                 objToMove.enabled = true;
             }
+
+            return objToMove;
         }
 
 
-        public static void TransformMove(GameObject targetObject, Vector3 targetPosition, float duration, int repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTransformMove objToMove = !targetObject.GetComponent<TweenTransformMove>()
-                ? targetObject.AddComponent<TweenTransformMove>()
-                : targetObject.GetComponent<TweenTransformMove>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetPosition;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToMove.AddDataSequence(tempData);
-            }
-
-            if (!objToMove.enabled)
-            {
-                objToMove.ElapsedDuration = 0;
-                objToMove.TotalDuration = 0;
-                objToMove.enabled = true;
-            }
-        }
-
-
-        public static void TransformRotate(GameObject targetObject, Vector3 targetEulerAngles, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 오브젝트를 회전시키는 함수</summary>
+        public static TweenData TransformRotate(GameObject targetObject, Vector3 targetEulerAngles, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTransformRotate objToRotate = !targetObject.GetComponent<TweenTransformRotate>()
                 ? targetObject.AddComponent<TweenTransformRotate>()
@@ -122,6 +95,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToRotate.IsLoop = false;
             objToRotate.AddDataSequence(tempData);
 
             if (!objToRotate.enabled)
@@ -130,37 +105,13 @@ namespace Muks.Tween
                 objToRotate.TotalDuration = 0;
                 objToRotate.enabled = true;
             }
+
+            return objToRotate;
         }
 
 
-        public static void TransformRotate(GameObject targetObject, Vector3 targetEulerAngles, float duration, int repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTransformRotate objToRotate = !targetObject.GetComponent<TweenTransformRotate>()
-                ? targetObject.AddComponent<TweenTransformRotate>()
-                : targetObject.GetComponent<TweenTransformRotate>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetEulerAngles;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToRotate.AddDataSequence(tempData);
-            }
-
-            if (!objToRotate.enabled)
-            {
-                objToRotate.ElapsedDuration = 0;
-                objToRotate.TotalDuration = 0;
-                objToRotate.enabled = true;
-            }
-        }
-
-
-        public static void TransformScale(GameObject targetObject, Vector3 targetScale, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 오브젝트의 크기를 조절하는 함수</summary>
+        public static TweenData TransformScale(GameObject targetObject, Vector3 targetScale, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTransformScale objToScale = !targetObject.GetComponent<TweenTransformScale>()
                 ? targetObject.AddComponent<TweenTransformScale>()
@@ -171,6 +122,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToScale.IsLoop = false;
             objToScale.AddDataSequence(tempData);
 
             if (!objToScale.enabled)
@@ -179,37 +132,13 @@ namespace Muks.Tween
                 objToScale.TotalDuration = 0;
                 objToScale.enabled = true;
             }
+
+            return objToScale;
         }
 
 
-        public static void TransformScale(GameObject targetObject, Vector3 targetScale, float duration, int repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTransformScale objToScale = !targetObject.GetComponent<TweenTransformScale>()
-                ? targetObject.AddComponent<TweenTransformScale>()
-                : targetObject.GetComponent<TweenTransformScale>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetScale;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToScale.AddDataSequence(tempData);
-            }
-
-            if (!objToScale.enabled)
-            {
-                objToScale.ElapsedDuration = 0;
-                objToScale.TotalDuration = 0;
-                objToScale.enabled = true;
-            }
-        }
-
-
-        public static void RectTransfromSizeDelta(GameObject targetObject, Vector2 targetSizeDelta, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 UI의 크기를 조절하는 함수</summary>
+        public static TweenData RectTransfromSizeDelta(GameObject targetObject, Vector2 targetSizeDelta, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenRectTransformSizeDelta objToSizeDelta = !targetObject.GetComponent<TweenRectTransformSizeDelta>()
                 ? targetObject.AddComponent<TweenRectTransformSizeDelta>()
@@ -220,6 +149,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToSizeDelta.IsLoop = false;
             objToSizeDelta.AddDataSequence(tempData);
 
             if (!objToSizeDelta.enabled)
@@ -228,35 +159,13 @@ namespace Muks.Tween
                 objToSizeDelta.TotalDuration = 0;
                 objToSizeDelta.enabled = true;
             }
+
+            return objToSizeDelta;
         }
 
-        public static void RectTransfromSizeDelta(GameObject targetObject, Vector2 targetSizeDelta, float duration, int repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenRectTransformSizeDelta objToSizeDelta = !targetObject.GetComponent<TweenRectTransformSizeDelta>()
-                ? targetObject.AddComponent<TweenRectTransformSizeDelta>()
-                : targetObject.GetComponent<TweenRectTransformSizeDelta>();
 
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetSizeDelta;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToSizeDelta.AddDataSequence(tempData);
-            }
-
-            if (!objToSizeDelta.enabled)
-            {
-                objToSizeDelta.ElapsedDuration = 0;
-                objToSizeDelta.TotalDuration = 0;
-                objToSizeDelta.enabled = true;
-            }
-        }
-
-        public static void RectTransfromAnchoredPosition(GameObject targetObject, Vector2 targetAnchoredPosition, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 UI의 위치를 이동시키는 함수</summary>
+        public static TweenData RectTransfromAnchoredPosition(GameObject targetObject, Vector2 targetAnchoredPosition, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenRectTransformAnchoredPosition objToAnchoredPosition = !targetObject.GetComponent<TweenRectTransformAnchoredPosition>()
                 ? targetObject.AddComponent<TweenRectTransformAnchoredPosition>()
@@ -267,6 +176,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToAnchoredPosition.IsLoop = false;
             objToAnchoredPosition.AddDataSequence(tempData);
 
             if (!objToAnchoredPosition.enabled)
@@ -275,133 +186,13 @@ namespace Muks.Tween
                 objToAnchoredPosition.TotalDuration = 0;
                 objToAnchoredPosition.enabled = true;
             }
-        }
 
-        public static void RectTransfromAnchoredPosition(GameObject targetObject, Vector2 targetAnchoredPosition, float duration, int repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenRectTransformAnchoredPosition objToAnchoredPosition = !targetObject.GetComponent<TweenRectTransformAnchoredPosition>()
-                ? targetObject.AddComponent<TweenRectTransformAnchoredPosition>()
-                : targetObject.GetComponent<TweenRectTransformAnchoredPosition>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetAnchoredPosition;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToAnchoredPosition.AddDataSequence(tempData);
-            }
-
-            if (!objToAnchoredPosition.enabled)
-            {
-                objToAnchoredPosition.ElapsedDuration = 0;
-                objToAnchoredPosition.TotalDuration = 0;
-                objToAnchoredPosition.enabled = true;
-            }
+            return objToAnchoredPosition;
         }
 
 
-        public static void IamgeColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenImageColor objToColor = !targetObject.GetComponent<TweenImageColor>()
-                ? targetObject.AddComponent<TweenImageColor>()
-                : targetObject.GetComponent<TweenImageColor>();
-
-            DataSequence tempData = new DataSequence();
-            tempData.TargetValue = targetColor;
-            tempData.Duration = duration;
-            tempData.TweenMode = tweenMode;
-            tempData.OnComplete = onComplete;
-            objToColor.AddDataSequence(tempData);
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-
-        public static void IamgeColor(GameObject targetObject, Color targetColor, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenImageColor objToColor = !targetObject.GetComponent<TweenImageColor>()
-                ? targetObject.AddComponent<TweenImageColor>()
-                : targetObject.GetComponent<TweenImageColor>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetColor;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-
-        public static void IamgeAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenImageAlpha objToColor = !targetObject.GetComponent<TweenImageAlpha>()
-                ? targetObject.AddComponent<TweenImageAlpha>()
-                : targetObject.GetComponent<TweenImageAlpha>();
-
-            DataSequence tempData = new DataSequence();
-            tempData.TargetValue = targetAlpha;
-            tempData.Duration = duration;
-            tempData.TweenMode = tweenMode;
-            tempData.OnComplete = onComplete;
-            objToColor.AddDataSequence(tempData);
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-        public static void IamgeAlpha(GameObject targetObject, float targetAlpha, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenImageAlpha objToColor = !targetObject.GetComponent<TweenImageAlpha>()
-                ? targetObject.AddComponent<TweenImageAlpha>()
-                : targetObject.GetComponent<TweenImageAlpha>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetAlpha;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-
-        public static void TextColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 텍스트 컬러 값을 변경하는 함수</summary>
+        public static TweenData TextColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTextColor objToColor = !targetObject.GetComponent<TweenTextColor>()
                 ? targetObject.AddComponent<TweenTextColor>()
@@ -412,6 +203,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -420,36 +213,13 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
-        }
 
-        public static void TextColor(GameObject targetObject, Color targetColor, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTextColor objToColor = !targetObject.GetComponent<TweenTextColor>()
-                ? targetObject.AddComponent<TweenTextColor>()
-                : targetObject.GetComponent<TweenTextColor>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetColor;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
+            return objToColor;
         }
 
 
-        public static void TextAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 텍스트 알파 값을 변경하는 함수</summary>
+        public static TweenData TextAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTextAlpha objToColor = !targetObject.GetComponent<TweenTextAlpha>()
                 ? targetObject.AddComponent<TweenTextAlpha>()
@@ -460,6 +230,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -468,37 +240,13 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
-        }
 
-        public static void TextAlpha(GameObject targetObject, float targetAlpha, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTextAlpha objToColor = !targetObject.GetComponent<TweenTextAlpha>()
-                ? targetObject.AddComponent<TweenTextAlpha>()
-                : targetObject.GetComponent<TweenTextAlpha>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetAlpha;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                tempData.OnComplete = onComplete;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
+            return objToColor;
         }
 
 
-        public static void TMPColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 TMP 컬러 값을 변경하는 함수</summary>
+        public static TweenData TMPColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTMPColor objToColor = !targetObject.GetComponent<TweenTMPColor>()
                 ? targetObject.AddComponent<TweenTMPColor>()
@@ -509,6 +257,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -517,37 +267,13 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
 
 
-        public static void TMPColor(GameObject targetObject, Color targetColor, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenTMPColor objToColor = !targetObject.GetComponent<TweenTMPColor>()
-                ? targetObject.AddComponent<TweenTMPColor>()
-                : targetObject.GetComponent<TweenTMPColor>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetColor;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-
-        public static void TMPAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 TMP 알파 값을 변경하는 함수</summary>
+        public static TweenData TMPAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenTMPAlpha objToColor = !targetObject.GetComponent<TweenTMPAlpha>()
                 ? targetObject.AddComponent<TweenTMPAlpha>()
@@ -558,6 +284,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -566,27 +294,26 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
 
 
-        public static void TMPAlpha(GameObject targetObject, float targetAlpha, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 이미지 컬러 값을 변경하는 함수</summary>
+        public static TweenData IamgeColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
-            TweenTMPAlpha objToColor = !targetObject.GetComponent<TweenTMPAlpha>()
-                ? targetObject.AddComponent<TweenTMPAlpha>()
-                : targetObject.GetComponent<TweenTMPAlpha>();
+            TweenImageColor objToColor = !targetObject.GetComponent<TweenImageColor>()
+                ? targetObject.AddComponent<TweenImageColor>()
+                : targetObject.GetComponent<TweenImageColor>();
 
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetAlpha;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                tempData.OnComplete = onComplete;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
+            DataSequence tempData = new DataSequence();
+            tempData.TargetValue = targetColor;
+            tempData.Duration = duration;
+            tempData.TweenMode = tweenMode;
+            tempData.OnComplete = onComplete;
 
-                objToColor.AddDataSequence(tempData);
-            }
+            objToColor.IsLoop = false;
+            objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
             {
@@ -594,10 +321,40 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
 
 
-        public static void SpriteRendererColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 이미지 알파 값을 변경하는 함수</summary>
+        public static TweenData IamgeAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        {
+            TweenImageAlpha objToColor = !targetObject.GetComponent<TweenImageAlpha>()
+                ? targetObject.AddComponent<TweenImageAlpha>()
+                : targetObject.GetComponent<TweenImageAlpha>();
+
+            DataSequence tempData = new DataSequence();
+            tempData.TargetValue = targetAlpha;
+            tempData.Duration = duration;
+            tempData.TweenMode = tweenMode;
+            tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
+            objToColor.AddDataSequence(tempData);
+
+            if (!objToColor.enabled)
+            {
+                objToColor.ElapsedDuration = 0;
+                objToColor.TotalDuration = 0;
+                objToColor.enabled = true;
+            }
+
+            return objToColor;
+        }
+
+
+        /// <summary>목표 값으로 지속 시간동안 스프라이트 렌더러 컬러 값을 변경하는 함수</summary>
+        public static TweenData SpriteRendererColor(GameObject targetObject, Color targetColor, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenSpriteRendererColor objToColor = !targetObject.GetComponent<TweenSpriteRendererColor>()
                 ? targetObject.AddComponent<TweenSpriteRendererColor>()
@@ -608,6 +365,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -616,37 +375,13 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
 
 
-        public static void SpriteRendererColor(GameObject targetObject, Color targetColor, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
-        {
-            TweenSpriteRendererColor objToColor = !targetObject.GetComponent<TweenSpriteRendererColor>()
-                ? targetObject.AddComponent<TweenSpriteRendererColor>()
-                : targetObject.GetComponent<TweenSpriteRendererColor>();
-
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetColor;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
-
-                objToColor.AddDataSequence(tempData);
-            }
-
-            if (!objToColor.enabled)
-            {
-                objToColor.ElapsedDuration = 0;
-                objToColor.TotalDuration = 0;
-                objToColor.enabled = true;
-            }
-        }
-
-
-        public static void SpriteRendererAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+        /// <summary>목표 값으로 지속 시간동안 스프라이트 렌더러 알파 값을 변경하는 함수</summary>
+        public static TweenData SpriteRendererAlpha(GameObject targetObject, float targetAlpha, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
             TweenSpriteRendererAlpha objToColor = !targetObject.GetComponent<TweenSpriteRendererAlpha>()
                 ? targetObject.AddComponent<TweenSpriteRendererAlpha>()
@@ -657,6 +392,8 @@ namespace Muks.Tween
             tempData.Duration = duration;
             tempData.TweenMode = tweenMode;
             tempData.OnComplete = onComplete;
+
+            objToColor.IsLoop = false;
             objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
@@ -665,25 +402,26 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
 
-        public static void SpriteRendererAlpha(GameObject targetObject, float targetAlpha, float duration, float repeatCount, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
+
+        /// <summary>목표 값으로 지속 시간동안 카메라 사이즈 값을 변경하는 함수</summary>
+        public static TweenData CameraOrthographicSize(GameObject targetObject, float targetSize, float duration, TweenMode tweenMode = TweenMode.Constant, Action onComplete = null)
         {
-            TweenSpriteRendererAlpha objToColor = !targetObject.GetComponent<TweenSpriteRendererAlpha>()
-                ? targetObject.AddComponent<TweenSpriteRendererAlpha>()
-                : targetObject.GetComponent<TweenSpriteRendererAlpha>();
+            TweenCameraSize objToColor = !targetObject.GetComponent<TweenCameraSize>()
+                ? targetObject.AddComponent<TweenCameraSize>()
+                : targetObject.GetComponent<TweenCameraSize>();
 
-            for (int i = 0; i < repeatCount; i++)
-            {
-                DataSequence tempData = new DataSequence();
-                tempData.TargetValue = targetAlpha;
-                tempData.Duration = duration;
-                tempData.TweenMode = tweenMode;
-                if (onComplete != null && i == repeatCount - 1)
-                    tempData.OnComplete = onComplete;
+            DataSequence tempData = new DataSequence();
+            tempData.TargetValue = targetSize;
+            tempData.Duration = duration;
+            tempData.TweenMode = tweenMode;
+            tempData.OnComplete = onComplete;
 
-                objToColor.AddDataSequence(tempData);
-            }
+            objToColor.IsLoop = false;
+            objToColor.AddDataSequence(tempData);
 
             if (!objToColor.enabled)
             {
@@ -691,7 +429,10 @@ namespace Muks.Tween
                 objToColor.TotalDuration = 0;
                 objToColor.enabled = true;
             }
+
+            return objToColor;
         }
+
     }
 }
 

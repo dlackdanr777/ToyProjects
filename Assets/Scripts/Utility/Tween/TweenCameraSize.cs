@@ -1,27 +1,27 @@
-using TMPro;
+
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Muks.Tween
 {
-    public class TweenTMPColor : TweenData
+    public class TweenCameraSize : TweenData
     {
-        /// <summary> 목표 위치 </summary>
-        public Color TargetColor;
+        private Camera _camera;
 
-        /// <summary> 시작 위치</summary>
-        public Color StartColor;
+        /// <summary> 시작 회전 값</summary>
+        public float StartSize;
 
-        public TextMeshProUGUI Text;
+        /// <summary> 목표 회전 값 </summary>
+        public float TargetSize;
 
 
         public override void SetData(DataSequence dataSequence)
         {
             base.SetData(dataSequence);
-            if(TryGetComponent(out Text))
+
+            if (TryGetComponent(out _camera))
             {
-                StartColor = Text.color;
-                TargetColor = (Color)dataSequence.TargetValue;
+                StartSize = _camera.orthographicSize;
+                TargetSize = (float)dataSequence.TargetValue;
             }
             else
             {
@@ -35,15 +35,13 @@ namespace Muks.Tween
             base.Update();
 
             float percent = _percentHandler[TweenMode](ElapsedDuration, TotalDuration);
-            
-            Text.color = Color.LerpUnclamped(StartColor, TargetColor, percent);
-        }
 
+            _camera.orthographicSize = Mathf.LerpUnclamped(StartSize, TargetSize, percent);
+        }
 
         protected override void TweenCompleted()
         {
-            Text.color = TargetColor;
+            _camera.orthographicSize = TargetSize;
         }
     }
 }
-
