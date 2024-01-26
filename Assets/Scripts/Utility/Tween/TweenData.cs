@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
 namespace Muks.Tween
 {
     public struct DataSequence
@@ -11,8 +12,10 @@ namespace Muks.Tween
         public object TargetValue;
         public float Duration;
         public TweenMode TweenMode;
+        public Action OnUpdate;
         public Action OnComplete;
     }
+
 
     public enum LoopType
     {
@@ -32,6 +35,9 @@ namespace Muks.Tween
         ///  <summary> 총 경과 시간 </summary>
         public float TotalDuration;
 
+        ///  <summary> 실행 중 주기적으로 실행되는 콜백 함수 </summary>
+        public Action OnUpdate;
+
         ///  <summary> 종료 콜백 함수 </summary>
         public Action OnComplete;
 
@@ -50,6 +56,7 @@ namespace Muks.Tween
         {
             TotalDuration = dataSequence.Duration;
             TweenMode = dataSequence.TweenMode;
+            OnUpdate = dataSequence.OnUpdate;
             OnComplete = dataSequence.OnComplete;
         }
 
@@ -70,7 +77,6 @@ namespace Muks.Tween
         public void Repeat(int count)
         {
             DataSequence sequence = DataSequences.Last();
-
             for (int i = 1; i < count; i++)
             {
                 AddDataSequence(sequence);
@@ -128,7 +134,6 @@ namespace Muks.Tween
                         else if (!_isRightMove && ElapsedDuration <= 0)
                         {
                             _isRightMove = true;
-
                         }
                         break;
                 }   
@@ -145,6 +150,7 @@ namespace Muks.Tween
 
                     OnComplete?.Invoke();
                     OnComplete = null;
+                    OnUpdate = null;
 
                     if (0 < DataSequences.Count)
                     {
@@ -158,11 +164,13 @@ namespace Muks.Tween
                     }
                 }
             }
+
+            OnUpdate?.Invoke();
           
         }
 
 
-        /// <summary>Tween애니메이션이 종료될 경우 불러올 함수 </summary>
+        /// <summary>Tween애니메이션이 종료될 경우 불러오는 함수 </summary>
         protected virtual void TweenCompleted()
         {
         }
