@@ -14,6 +14,14 @@ namespace Muks.Tween
         public Action OnComplete;
     }
 
+    public enum LoopType
+    {
+        /// <summary>처음으로 되돌아가서 다시 시작</summary>
+        Restart,
+        /// <summary>실행된 모션 되감고 다시 시작</summary>
+        Yoyo
+    }
+
     public class TweenData : MonoBehaviour
     {
         public Queue<DataSequence> DataSequences = new Queue<DataSequence>();
@@ -24,7 +32,7 @@ namespace Muks.Tween
         ///  <summary> 총 경과 시간 </summary>
         public float TotalDuration;
 
-        ///  <summary> 콜백 함수 </summary>
+        ///  <summary> 종료 콜백 함수 </summary>
         public Action OnComplete;
 
         public TweenMode TweenMode;
@@ -32,6 +40,8 @@ namespace Muks.Tween
         public bool IsLoop;
 
         protected Dictionary<TweenMode, Func<float, float, float>> _percentHandler;
+
+        private LoopType _loopType;
 
         private bool _isRightMove = true;
 
@@ -45,12 +55,13 @@ namespace Muks.Tween
 
 
         /// <summary>무한 반복</summary>
-        public void Loop()
+        public void Loop(LoopType loopType = LoopType.Restart)
         {
             DataSequence sequence = DataSequences.Last();
             DataSequences.Clear();
             DataSequences.Enqueue(sequence);
             SetData(DataSequences.Dequeue());
+            _loopType = loopType;
             IsLoop = true;
         }
 
@@ -96,18 +107,31 @@ namespace Muks.Tween
             //만약 반복 설정이 되어있다면?
             if (IsLoop)
             {
-                ElapsedDuration += _isRightMove ? Time.deltaTime : -Time.deltaTime;
-                ElapsedDuration = Mathf.Clamp(ElapsedDuration, 0, TotalDuration);
-
-                if (_isRightMove && TotalDuration <= ElapsedDuration)
+                switch (_loopType)
                 {
-                    _isRightMove = false;
-                }
-                else if (!_isRightMove && ElapsedDuration <= 0)
-                {
-                    _isRightMove = true;
+                    case LoopType.Restart:
+                        ElapsedDuration += Time.deltaTime;
+                        ElapsedDuration = Mathf.Clamp(ElapsedDuration, 0, TotalDuration);
 
-                }
+                        if (TotalDuration <= ElapsedDuration)
+                            ElapsedDuration = 0;
+                        break;
+
+                    case LoopType.Yoyo:
+                        ElapsedDuration += _isRightMove ? Time.deltaTime : -Time.deltaTime;
+                        ElapsedDuration = Mathf.Clamp(ElapsedDuration, 0, TotalDuration);
+
+                        if (_isRightMove && TotalDuration <= ElapsedDuration)
+                        {
+                            _isRightMove = false;
+                        }
+                        else if (!_isRightMove && ElapsedDuration <= 0)
+                        {
+                            _isRightMove = true;
+
+                        }
+                        break;
+                }   
             }
 
             else

@@ -62,6 +62,19 @@ namespace Muks.Tween
     /// <summary>트윈 애니메이션을 위한 정적 클래스</summary>
     public static class Tween
     {
+
+        /// <summary>해당 오브젝트의 일시정지된 모든 Tween 실행 함수</summary>
+        public static void Play(GameObject gameObject)
+        {
+            TweenData[] tweens = gameObject.GetComponents<TweenData>();
+
+            foreach (TweenData tween in tweens)
+            {
+                tween.enabled = true;
+            }
+        }
+
+
         /// <summary>해당 오브젝트의 모든 Tween 정지 함수</summary>
         public static void Stop(GameObject gameObject)
         {
@@ -73,6 +86,18 @@ namespace Muks.Tween
                 tween.IsLoop = false;
                 tween.OnComplete = null;
                 tween.DataSequences.Clear();
+            }
+        }
+
+
+        /// <summary>해당 오브젝트의 모든 Tween 일시 정지 함수(Play() 호출 전까지 정지)</summary>
+        public static void Pause(GameObject gameObject)
+        {
+            TweenData[] tweens = gameObject.GetComponents<TweenData>();
+
+            foreach (TweenData tween in tweens)
+            {
+                tween.enabled = false;
             }
         }
 
